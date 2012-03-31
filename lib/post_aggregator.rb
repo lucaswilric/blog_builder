@@ -7,7 +7,7 @@ class PostAggregator
 
 	def most_recent(count = 1)
 
-	  @posts = YamlFacade.load_documents("#{ BUILD_ROOT }/posts.yml").sort {|a,b| DateTime.parse(b['pub-date']) <=> DateTime.parse(a['pub-date']) } unless @posts
+	  @posts = YamlFacade.load_documents("posts.yml").sort {|a,b| DateTime.parse(b['pub-date']) <=> DateTime.parse(a['pub-date']) } unless @posts
 	  
 	  count == 1 ? @posts.first : @posts.first(count)
 	end
@@ -19,7 +19,8 @@ class PostAggregator
 
 			# Store some calculated data
 			post['rss-pub-date'] = Date.parse(post['pub-date']).rfc2822
-			post['link'] = "#{ BASE_URL }/posts/#{ @ps.get_file_name(post['title']) }"
+			post['rel-link'] = "/posts/#{ @ps.get_file_name(post['title']) }"
+			post['abs-link'] = "#{ BASE_URL }#{ post['rel-link'] }"
 			
 			# Merge & append
 			content += @merger.merge post, post_templates

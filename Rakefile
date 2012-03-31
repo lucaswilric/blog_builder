@@ -7,36 +7,53 @@ require './lib/yaml_facade'
 require './lib/page_saver'
 require './lib/post_aggregator'
 
-BUILD_ROOT = Dir.pwd
-POSTS_DIR = BUILD_ROOT + '/../posts'
-TEMPLATES_DIR = BUILD_ROOT + '/../templates'
-OUTPUT_DIR = BUILD_ROOT + '/../html'
+_BUILD_ROOT = ''
+_POSTS_DIR = 'posts'
+_TEMPLATES_DIR = 'templates'
+_OUTPUT_DIR = 'html'
 
 BLOG_TITLE = 'The Grand Experiment'
 BASE_URL = 'http://lucasrichter.id.au'
 BLOG_TAGLINE = 'The blog of the great adventurer'
 
-directory POSTS_DIR
-directory TEMPLATES_DIR
-directory "#{OUTPUT_DIR}/posts"
-directory "#{OUTPUT_DIR}/posts/partials"
+directory _POSTS_DIR
+directory _TEMPLATES_DIR
+directory "#{_OUTPUT_DIR}/posts"
+directory "#{_OUTPUT_DIR}/posts/partials"
 
-task :default => [:clear_output_path, :front_page, :rss, :archive, :complete_html, :partial_html] do
- # Nothing
+task :default => [:initialise, :clear_output_path, :assemble_posts, :partial_html, :complete_html, :front_page, :rss, :archive] do
+	# Nothing
 end
 
-task :clear_output_path do
-	sh "rm -rf '#{OUTPUT_DIR}'"
-	sh "mkdir '#{OUTPUT_DIR}'"
+task :do_everything, :pwd do |t, args|
+	args.with_defaults(:pwd => Dir.pwd.sub(/\/blog_builder$/, ''))
+	_BUILD_ROOT = args[:pwd]
+	
+	puts "Build root: #{_BUILD_ROOT}"
+	
+	Dir.chdir(_BUILD_ROOT) do
+		Rake::Task[:default].invoke
+	end
 end
 
-task :assemble_posts => [POSTS_DIR] do
-  all_posts = YamlFacade.join_directory POSTS_DIR
+task :initialise do
+#	_POSTS_DIR = _BUILD_ROOT + '/posts'
+#	_TEMPLATES_DIR = _BUILD_ROOT + '/templates'
+#	_OUTPUT_DIR = _BUILD_ROOT + '/html'
+end
+
+task :clear_output_path => [:initialise] do
+	sh "rm -rf '#{_OUTPUT_DIR}'"
+	sh "mkdir '#{_OUTPUT_DIR}'"
+end
+
+task :assemble_posts => [:initialise, _POSTS_DIR] do
+  all_posts = YamlFacade.join_directory _POSTS_DIR
   
-  File.open("#{BUILD_ROOT}/posts.yml", "w") {|f| f.write(all_posts)}
+  File.open("posts.yml", "w") {|f| f.write(all_posts)}
 end
 
-task :front_page => [:clear_output_path, :assemble_posts, :complete_html] do
+task :front_page => [:initialise, :clear_output_path, :assemble_posts, :complete_html] do
 	pa = PostAggregator.new
 	
 	content = pa.aggregate_most_recent(10, ['posts'])
@@ -46,12 +63,12 @@ task :front_page => [:clear_output_path, :assemble_posts, :complete_html] do
 		'content' => content 
 	}
 	
-	page_html = DocMerger.new.merge page, ['page']
+	page_html = DocMerger.new(_TEMPLATES_DIR).merge page, ['page']
 	
-	PageSaver.new.save(page_html, OUTPUT_DIR, 'index')
+	PageSaver.new.save(page_html, _OUTPUT_DIR, 'index')
 end	
 
-task :rss => [:clear_output_path, :assemble_posts, :complete_html] do
+task :rss => [:initialise, :clear_output_path, :assemble_posts, :complete_html] do
 	pa = PostAggregator.new
 
 	content = pa.aggregate_most_recent(20, ['posts-rss'])
@@ -64,12 +81,12 @@ task :rss => [:clear_output_path, :assemble_posts, :complete_html] do
 		'pub-date' => Date.parse(pa.most_recent['pub-date']).rfc2822
 	}
 	
-	page_rss = DocMerger.new.merge rss, ['page-rss']
+	page_rss = DocMerger.new(_TEMPLATES_DIR).merge rss, ['page-rss']
 	
-	PageSaver.new.save(page_rss, OUTPUT_DIR, 'rss', 'xml')
+	PageSaver.new.save(page_rss, _OUTPUT_DIR, 'rss', 'xml')
 end
 
-task :archive => [:clear_output_path, :assemble_posts, :complete_html] do
+task :archive => [:initialise, :clear_output_path, :assemble_posts, :complete_html] do
 	pa = PostAggregator.new
 	
 	content = pa.aggregate_most_recent(99999, ['link'])
@@ -79,17 +96,17 @@ task :archive => [:clear_output_path, :assemble_posts, :complete_html] do
 		'content' => content
 	}
 	
-	archive_page = DocMerger.new.merge archive, ['archive', 'page']
+	archive_page = DocMerger.new(_TEMPLATES_DIR).merge archive, ['archive', 'page']
 	
-	PageSaver.new.save(archive_page, OUTPUT_DIR, 'archive')
+	PageSaver.new.save(archive_page, _OUTPUT_DIR, 'archive')
 end
 
-task :complete_html => [:clear_output_path, "#{OUTPUT_DIR}/posts", :assemble_posts] do
-	merger = DocMerger.new
+task :complete_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/posts", :assemble_posts] do
+	merger = DocMerger.new(_TEMPLATES_DIR)
 	ps = PageSaver.new
-	post_dir = "#{OUTPUT_DIR}/posts"
+	post_dir = "#{_OUTPUT_DIR}/posts"
 	
-	YamlFacade.load_documents("#{BUILD_ROOT}/posts.yml").each do |post|
+	YamlFacade.load_documents("#{_BUILD_ROOT}/posts.yml").each do |post|
 		post_html = merger.merge post, ['posts', 'page']
 		
 		ps.save(post_html, post_dir, post['title'])
@@ -97,12 +114,12 @@ task :complete_html => [:clear_output_path, "#{OUTPUT_DIR}/posts", :assemble_pos
 	
 end
 
-task :partial_html => [:clear_output_path, "#{OUTPUT_DIR}/posts/partials", :assemble_posts] do
-	merger = DocMerger.new
+task :partial_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/posts/partials", :assemble_posts] do
+	merger = DocMerger.new(_TEMPLATES_DIR)
 	ps = PageSaver.new
-	post_dir = "#{OUTPUT_DIR}/posts/partials"
+	post_dir = "#{_OUTPUT_DIR}/posts/partials"
 	
-	YamlFacade.load_documents("#{BUILD_ROOT}/posts.yml").each do |post|
+	YamlFacade.load_documents("#{_BUILD_ROOT}/posts.yml").each do |post|
 		post_html = merger.merge post, ['posts']
 		
 		ps.save(post_html, post_dir, post['title'])

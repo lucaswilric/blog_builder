@@ -1,7 +1,8 @@
 class DocMerger
 
-	def initialize
+	def initialize(templates_dir = 'templates')
 		@translator = Translator.new
+		@templates_dir = templates_dir
 	end
 
 	def merge(hash, templates)
@@ -10,7 +11,7 @@ class DocMerger
 		hash['content'] = @translator.translate(hash['markdown']) if hash['markdown']
 			
 		templates.each do |template_name|
-			template = YamlFacade.load_documents("#{TEMPLATES_DIR}/#{template_name}.yml")[0]
+			template = YamlFacade.load_documents("#{ @templates_dir }/#{template_name}.yml")[0]
 			
 			content_text = template['content']
 			

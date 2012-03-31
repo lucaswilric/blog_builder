@@ -5,7 +5,7 @@ class YamlFacade
   def self.join_directory(dir)
     all_posts = ""
       
-    Dir.chdir(POSTS_DIR) do
+    Dir.chdir(dir) do
       Dir.glob("**.{yml}").each do |file| 
         
         yaml = File.open(file, "r") {|f| f.read }
@@ -29,6 +29,7 @@ class YamlFacade
   def self.load_documents(file_name)
     docs = []
     
+    puts Dir.pwd
     docs_text = File.open(file_name) {|f| f.read }
 
     YAML::load_documents(docs_text) do |yml|
