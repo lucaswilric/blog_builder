@@ -1,33 +1,55 @@
 require 'redcarpet'
 require 'yaml'
 
-require './lib/html_merger'
+require './lib/doc_merger'
 require './lib/translator'
+require './lib/yaml_facade'
+require './lib/post_saver'
 
 BUILD_ROOT = Dir.pwd
+POSTS_DIR = BUILD_ROOT + '/../posts'
+TEMPLATES_DIR = BUILD_ROOT + '/../templates'
+OUTPUT_DIR = BUILD_ROOT + '/../html'
 
-directory "html/posts"
-directory "html/posts/partials"
+directory POSTS_DIR
+directory TEMPLATES_DIR
+directory "#{OUTPUT_DIR}/posts"
+directory "#{OUTPUT_DIR}/posts/partials"
 
-task :translate_posts => ["html/posts/partials"] do
-	src_dir = BUILD_ROOT + '/posts'
-	dest_dir = BUILD_ROOT + '/html/posts/partials'
-	
-	Translator.new.translate_directory(src_dir, dest_dir)
+task :clear_output_path do
+	sh "rm -rf '#{OUTPUT_DIR}'"
+	sh "mkdir '#{OUTPUT_DIR}'"
 end
 
-task :inject_posts_into_templates => ["html/posts/partials", :translate_posts] do
-	template_text = File.open(BUILD_ROOT + "/templates/layout.html", "r") {|f| f.read }
+task :assemble_posts => [POSTS_DIR] do
+  all_posts = YamlFacade.join_directory POSTS_DIR
+  
+  File.open("#{BUILD_ROOT}/posts.yml", "w") {|f| f.write(all_posts)}
+end
+
+task :merge_posts_to_complete_html => [:clear_output_path, "#{OUTPUT_DIR}/posts", :assemble_posts] do
+	merger = DocMerger.new
+	post_dir = "#{OUTPUT_DIR}/posts"
 	
-	Dir.chdir 'html/posts/partials' do
-		Dir.glob("*.html").each do |file|		
-			merge_hash = Hash.new
-			merge_hash['PAGE_TITLE'] = file.sub(/.html$/, '').gsub(/_/, ' ').capitalize
-			merge_hash['PAGE_CONTENT'] = File.open(file, "r") {|f| f.read }
-			
-			complete_post = HtmlMerger.merge('layout', merge_hash)
-			
-			File.open('../'+file, "w") {|f| f.write complete_post }
-		end
+	YamlFacade.load_documents("#{BUILD_ROOT}/posts.yml").each do |post|
+		post['content'] = merger.merge 'posts', post
+		
+		post_html = merger.merge 'page', post
+		
+		PostSaver.save(post_html, post_dir, post['title'])
+	end
+	
+end
+
+task :merge_posts_to_partial_html => [:clear_output_path, "#{OUTPUT_DIR}/posts/partials", :assemble_posts] do
+	merger = DocMerger.new
+	post_dir = "#{OUTPUT_DIR}/posts/partials"
+	
+	YamlFacade.load_documents("#{BUILD_ROOT}/posts.yml").each do |post|
+		post_html = merger.merge 'posts', post
+
+		puts post_html
+		
+		PostSaver.save(post_html, post_dir, post['title'])
 	end
 end

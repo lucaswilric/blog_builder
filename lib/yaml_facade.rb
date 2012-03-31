@@ -2,7 +2,7 @@ class YamlFacade
 
   Boundary = "---\n"
   
-  def join_directory(dir)
+  def self.join_directory(dir)
     all_posts = ""
       
     Dir.chdir(POSTS_DIR) do
@@ -17,7 +17,7 @@ class YamlFacade
     all_posts
   end
   
-  def join_documents(first, second)
+  def self.join_documents(first, second)
     return first unless second
   
     second = Boundary + second unless second.start_with? Boundary
@@ -26,7 +26,7 @@ class YamlFacade
     first.sub(/(^#{Boundary}*)*\Z/, '') + second
   end
   
-  def read_documents(file_name)
+  def self.load_documents(file_name)
     docs = []
     
     docs_text = File.open(file_name) {|f| f.read }
@@ -34,5 +34,7 @@ class YamlFacade
     YAML::load_documents(docs_text) do |yml|
       docs << yml
     end
+    
+    docs
   end
 end
