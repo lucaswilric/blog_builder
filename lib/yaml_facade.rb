@@ -29,7 +29,6 @@ class YamlFacade
   def self.load_documents(file_name)
     docs = []
     
-    puts Dir.pwd
     docs_text = File.open(file_name) {|f| f.read }
 
     YAML::load_documents(docs_text) do |yml|

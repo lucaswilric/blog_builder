@@ -17,34 +17,42 @@ BASE_URL = 'http://lucasrichter.id.au'
 BLOG_TAGLINE = 'The blog of the great adventurer'
 
 directory _POSTS_DIR
+directory "#{ _POSTS_DIR }/img"
 directory _TEMPLATES_DIR
+directory "#{_OUTPUT_DIR}/img"
 directory "#{_OUTPUT_DIR}/posts"
 directory "#{_OUTPUT_DIR}/posts/partials"
 
-task :default => [:initialise, :clear_output_path, :assemble_posts, :partial_html, :complete_html, :front_page, :rss, :archive] do
+
+task :default => [:initialise, :clear_output_path, :assemble_posts, :partial_html, :complete_html, :front_page, :rss, :archive, :static_files] do
 	# Nothing
 end
 
 task :do_everything, :pwd do |t, args|
 	args.with_defaults(:pwd => Dir.pwd.sub(/\/blog_builder$/, ''))
+
+	Rake::Task[:initialise].invoke(args[:pwd])
+	
+	Rake::Task[:default].invoke
+end
+
+task :initialise, :pwd do |t, args|
+	args.with_defaults(:pwd => Dir.pwd.sub(/\/blog_builder$/, ''))
 	_BUILD_ROOT = args[:pwd]
 	
 	puts "Build root: #{_BUILD_ROOT}"
 	
-	Dir.chdir(_BUILD_ROOT) do
-		Rake::Task[:default].invoke
-	end
-end
-
-task :initialise do
-#	_POSTS_DIR = _BUILD_ROOT + '/posts'
-#	_TEMPLATES_DIR = _BUILD_ROOT + '/templates'
-#	_OUTPUT_DIR = _BUILD_ROOT + '/html'
+	Dir.chdir(_BUILD_ROOT)
 end
 
 task :clear_output_path => [:initialise] do
 	sh "rm -rf '#{_OUTPUT_DIR}'"
 	sh "mkdir '#{_OUTPUT_DIR}'"
+end
+
+task :static_files => [:initialise, "#{ _POSTS_DIR }/img", "#{ _OUTPUT_DIR }/img"] do
+	cp_r "#{ _POSTS_DIR }/img/.", "#{ _OUTPUT_DIR }/img"
+	cp_r "#{ _TEMPLATES_DIR }/static/.", "#{ _OUTPUT_DIR }"
 end
 
 task :assemble_posts => [:initialise, _POSTS_DIR] do
