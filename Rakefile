@@ -67,7 +67,9 @@ task :front_page => [:initialise, :clear_output_path, :assemble_posts, :complete
 	content = pa.aggregate_most_recent(10, ['posts'])
 	
 	page = { 
-		'title' => BLOG_TITLE, 
+		'BASE_URL' => BASE_URL,
+		'blog-title' => BLOG_TITLE,
+		'title' => BLOG_TITLE,
 		'content' => content 
 	}
 	
@@ -100,7 +102,9 @@ task :archive => [:initialise, :clear_output_path, :assemble_posts, :complete_ht
 	content = pa.aggregate_most_recent(99999, ['link'])
 	
 	archive = {
+		'BASE_URL' => BASE_URL,
 		'title' => "#{ BLOG_TITLE } - Archive",
+		'blog-title' => BLOG_TITLE,
 		'content' => content
 	}
 	
@@ -115,6 +119,8 @@ task :complete_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/posts",
 	post_dir = "#{_OUTPUT_DIR}/posts"
 	
 	YamlFacade.load_documents("#{_BUILD_ROOT}/posts.yml").each do |post|
+		post['BASE_URL'] = BASE_URL
+		post['blog-title'] = BLOG_TITLE
 		post_html = merger.merge post, ['posts', 'page']
 		
 		ps.save(post_html, post_dir, post['title'])

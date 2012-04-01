@@ -21,6 +21,8 @@ class DocMerger
 				puts 'value of #{key} is empty!' unless value
 				content_text = content_text.gsub(/\[\[#{key}\]\]/, value.to_s)
 			end
+			
+			hash['content'] = content_text
 		end
 		
 		content_text
