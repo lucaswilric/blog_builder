@@ -20,7 +20,7 @@ class PostAggregator
 			# Store some calculated data
 			post['rss-pub-date'] = Date.parse(post['pub-date']).rfc2822
 			post['rel-link'] = "/posts/#{ @ps.get_file_name(post['title']) }"
-			post['abs-link'] = "#{ BASE_URL }#{ post['rel-link'] }"
+			post['abs-link'] = "#{ Cfg.setting('blog-url') }#{ post['rel-link'] }"
 			
 			# Merge & append
 			content += @merger.merge post, post_templates

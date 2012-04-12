@@ -6,8 +6,7 @@ require './lib/translator'
 require './lib/yaml_facade'
 require './lib/page_saver'
 require './lib/post_aggregator'
-
-config = {}
+require './lib/cfg'
 
 _BUILD_ROOT = ''
 _POSTS_DIR = 'posts'
@@ -28,7 +27,7 @@ end
 
 desc 'Build the blog. This task lets you specify the root directory and config file.'
 task :do_everything, :pwd, :config do |t, args|
-	args.with_defaults(:pwd => Dir.pwd.sub(/\/blog_builder$/, ''), :config => 'config.yml')
+	args.with_defaults(:pwd => Dir.pwd.sub(/\/blog_builder$/, ''), :config => "#{ Rake.original_dir }/config.yml")
 
 	Rake::Task[:initialise].invoke(args[:pwd], args[:config])
 	
@@ -37,10 +36,10 @@ end
 
 desc 'Set the build parameters to those given, and load the config from the given file (or config.yml)'
 task :initialise, :pwd, :config do |t, args|
-	args.with_defaults(:pwd => Dir.pwd.sub(/\/blog_builder$/, ''), :config => 'config.yml')
+	args.with_defaults(:pwd => Dir.pwd.sub(/\/blog_builder$/, ''), :config => "#{ Rake.original_dir }/config.yml")
 	_BUILD_ROOT = args[:pwd]
 	
-	config = YamlFacade.load_documents(args[:config])[0]
+	Cfg.load(args[:config])
 	
 	puts "Build root: #{_BUILD_ROOT}"
 	
@@ -73,9 +72,9 @@ task :front_page => [:initialise, :clear_output_path, :assemble_posts, :complete
 	content = pa.aggregate_most_recent(10, ['posts'])
 	
 	page = { 
-		'blog-url' => config['blog-url'],
-		'blog-title' => config['blog-title'],
-		'title' => config['blog-title'],
+		'blog-url' => Cfg.setting('blog-url'),
+		'blog-title' => Cfg.setting('blog-title'),
+		'title' => Cfg.setting('blog-title'),
 		'content' => content 
 	}
 	
@@ -91,9 +90,9 @@ task :rss => [:initialise, :clear_output_path, :assemble_posts, :complete_html] 
 	content = pa.aggregate_most_recent(20, ['posts-rss'])
 	
 	rss = { 
-		'title' => config['blog-title'], 
-		'link' => config['blog-url'], 
-		'description' => config['blog-tagline'], 
+		'title' => Cfg.setting('blog-title'), 
+		'link' => Cfg.setting('blog-url'), 
+		'description' => Cfg.setting('blog-tagline'), 
 		'content' => content,
 		'pub-date' => Date.parse(pa.most_recent['pub-date']).rfc2822
 	}
@@ -110,9 +109,9 @@ task :archive => [:initialise, :clear_output_path, :assemble_posts, :complete_ht
 	content = pa.aggregate_most_recent(99999, ['link'])
 	
 	archive = {
-		'blog-url' => config['blog-url'],
-		'title' => "#{ config['blog-title'] } - Archive",
-		'blog-title' => config['blog-title'],
+		'blog-url' => Cfg.setting('blog-url'),
+		'title' => "#{ Cfg.setting('blog-title') } - Archive",
+		'blog-title' => Cfg.setting('blog-title'),
 		'content' => content
 	}
 	
@@ -128,8 +127,8 @@ task :complete_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/posts",
 	post_dir = "#{_OUTPUT_DIR}/posts"
 	
 	YamlFacade.load_documents("#{_BUILD_ROOT}/posts.yml").each do |post|
-		post['blog-url'] = config['blog-url']
-		post['blog-title'] = config['blog-title']
+		post['blog-url'] = Cfg.setting('blog-url')
+		post['blog-title'] = Cfg.setting('blog-title')
 		post_html = merger.merge post, ['posts', 'page']
 		
 		ps.save(post_html, post_dir, post['title'])
