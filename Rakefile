@@ -7,14 +7,12 @@ require './lib/yaml_facade'
 require './lib/page_saver'
 require './lib/post_aggregator'
 
+config = {}
+
 _BUILD_ROOT = ''
 _POSTS_DIR = 'posts'
 _TEMPLATES_DIR = 'templates'
 _OUTPUT_DIR = 'public'
-
-BLOG_TITLE = 'The Grand Experiment'
-BASE_URL = 'http://blog-experiment.lucasrichter.id.au'
-BLOG_TAGLINE = 'The blog of the great adventurer'
 
 directory _POSTS_DIR
 directory "#{ _POSTS_DIR }/img"
@@ -28,17 +26,19 @@ task :default => [:initialise, :clear_output_path, :assemble_posts, :partial_htm
 	# Nothing
 end
 
-task :do_everything, :pwd do |t, args|
-	args.with_defaults(:pwd => Dir.pwd.sub(/\/blog_builder$/, ''))
+task :do_everything, :pwd, :config do |t, args|
+	args.with_defaults(:pwd => Dir.pwd.sub(/\/blog_builder$/, ''), :config => 'config.yml')
 
-	Rake::Task[:initialise].invoke(args[:pwd])
+	Rake::Task[:initialise].invoke(args[:pwd], args[:config])
 	
 	Rake::Task[:default].invoke
 end
 
-task :initialise, :pwd do |t, args|
-	args.with_defaults(:pwd => Dir.pwd.sub(/\/blog_builder$/, ''))
+task :initialise, :pwd, :config do |t, args|
+	args.with_defaults(:pwd => Dir.pwd.sub(/\/blog_builder$/, ''), :config => 'config.yml')
 	_BUILD_ROOT = args[:pwd]
+	
+	config = YamlFacade.load_documents(args[:config])[0]
 	
 	puts "Build root: #{_BUILD_ROOT}"
 	
@@ -67,9 +67,9 @@ task :front_page => [:initialise, :clear_output_path, :assemble_posts, :complete
 	content = pa.aggregate_most_recent(10, ['posts'])
 	
 	page = { 
-		'BASE_URL' => BASE_URL,
-		'blog-title' => BLOG_TITLE,
-		'title' => BLOG_TITLE,
+		'blog-url' => config['blog-url'],
+		'blog-title' => config['blog-title'],
+		'title' => config['blog-title'],
 		'content' => content 
 	}
 	
@@ -84,9 +84,9 @@ task :rss => [:initialise, :clear_output_path, :assemble_posts, :complete_html] 
 	content = pa.aggregate_most_recent(20, ['posts-rss'])
 	
 	rss = { 
-		'title' => BLOG_TITLE, 
-		'link' => BASE_URL, 
-		'description' => BLOG_TAGLINE, 
+		'title' => config['blog-title'], 
+		'link' => config['blog-url'], 
+		'description' => config['blog-tagline'], 
 		'content' => content,
 		'pub-date' => Date.parse(pa.most_recent['pub-date']).rfc2822
 	}
@@ -102,9 +102,9 @@ task :archive => [:initialise, :clear_output_path, :assemble_posts, :complete_ht
 	content = pa.aggregate_most_recent(99999, ['link'])
 	
 	archive = {
-		'BASE_URL' => BASE_URL,
-		'title' => "#{ BLOG_TITLE } - Archive",
-		'blog-title' => BLOG_TITLE,
+		'blog-url' => config['blog-url'],
+		'title' => "#{ config['blog-title'] } - Archive",
+		'blog-title' => config['blog-title'],
 		'content' => content
 	}
 	
@@ -119,8 +119,8 @@ task :complete_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/posts",
 	post_dir = "#{_OUTPUT_DIR}/posts"
 	
 	YamlFacade.load_documents("#{_BUILD_ROOT}/posts.yml").each do |post|
-		post['BASE_URL'] = BASE_URL
-		post['blog-title'] = BLOG_TITLE
+		post['blog-url'] = config['blog-url']
+		post['blog-title'] = config['blog-title']
 		post_html = merger.merge post, ['posts', 'page']
 		
 		ps.save(post_html, post_dir, post['title'])
