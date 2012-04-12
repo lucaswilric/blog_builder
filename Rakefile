@@ -21,11 +21,12 @@ directory "#{_OUTPUT_DIR}/img"
 directory "#{_OUTPUT_DIR}/posts"
 directory "#{_OUTPUT_DIR}/posts/partials"
 
-
+desc "The default task: build the blog using default parameters."
 task :default => [:initialise, :clear_output_path, :assemble_posts, :partial_html, :complete_html, :front_page, :rss, :archive, :static_files] do
 	# Nothing
 end
 
+desc 'Build the blog. This task lets you specify the root directory and config file.'
 task :do_everything, :pwd, :config do |t, args|
 	args.with_defaults(:pwd => Dir.pwd.sub(/\/blog_builder$/, ''), :config => 'config.yml')
 
@@ -34,6 +35,7 @@ task :do_everything, :pwd, :config do |t, args|
 	Rake::Task[:default].invoke
 end
 
+desc 'Set the build parameters to those given, and load the config from the given file (or config.yml)'
 task :initialise, :pwd, :config do |t, args|
 	args.with_defaults(:pwd => Dir.pwd.sub(/\/blog_builder$/, ''), :config => 'config.yml')
 	_BUILD_ROOT = args[:pwd]
@@ -45,22 +47,26 @@ task :initialise, :pwd, :config do |t, args|
 	Dir.chdir(_BUILD_ROOT)
 end
 
+desc 'Clean the output directory so we have a clean build.'
 task :clear_output_path => [:initialise] do
 	sh "rm -rf '#{_OUTPUT_DIR}'"
 	sh "mkdir '#{_OUTPUT_DIR}'"
 end
 
+desc 'Move the static files from the templates and posts directories to the output directory.'
 task :static_files => [:initialise, "#{ _POSTS_DIR }/img", "#{ _OUTPUT_DIR }/img"] do
 	cp_r "#{ _POSTS_DIR }/img/.", "#{ _OUTPUT_DIR }/img"
 	cp_r "#{ _TEMPLATES_DIR }/static/.", "#{ _OUTPUT_DIR }"
 end
 
+desc 'Assemble all the YAML files from the posts directory into one big YAML document to minimise I/O.'
 task :assemble_posts => [:initialise, _POSTS_DIR] do
   all_posts = YamlFacade.join_directory _POSTS_DIR
   
   File.open("posts.yml", "w") {|f| f.write(all_posts)}
 end
 
+desc 'Generate the front page, which shows the 10 newest posts.'
 task :front_page => [:initialise, :clear_output_path, :assemble_posts, :complete_html] do
 	pa = PostAggregator.new
 	
@@ -78,6 +84,7 @@ task :front_page => [:initialise, :clear_output_path, :assemble_posts, :complete
 	PageSaver.new.save(page_html, _OUTPUT_DIR, 'index')
 end	
 
+desc 'Generate the RSS feed, which includes the 20 newest posts.'
 task :rss => [:initialise, :clear_output_path, :assemble_posts, :complete_html] do
 	pa = PostAggregator.new
 
@@ -96,6 +103,7 @@ task :rss => [:initialise, :clear_output_path, :assemble_posts, :complete_html] 
 	PageSaver.new.save(page_rss, _OUTPUT_DIR, 'rss', 'xml')
 end
 
+desc 'Generate the archive page, which shows a link to every post.'
 task :archive => [:initialise, :clear_output_path, :assemble_posts, :complete_html] do
 	pa = PostAggregator.new
 	
@@ -113,6 +121,7 @@ task :archive => [:initialise, :clear_output_path, :assemble_posts, :complete_ht
 	PageSaver.new.save(archive_page, _OUTPUT_DIR, 'archive')
 end
 
+desc 'Generate the pages that display each individual post.'
 task :complete_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/posts", :assemble_posts] do
 	merger = DocMerger.new(_TEMPLATES_DIR)
 	ps = PageSaver.new
@@ -128,6 +137,7 @@ task :complete_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/posts",
 	
 end
 
+desc 'Generate the "HTML chunk" for each post - just the HTML, none of the template crap.'
 task :partial_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/posts/partials", :assemble_posts] do
 	merger = DocMerger.new(_TEMPLATES_DIR)
 	ps = PageSaver.new
