@@ -10,10 +10,10 @@ require './lib/post_aggregator'
 _BUILD_ROOT = ''
 _POSTS_DIR = 'posts'
 _TEMPLATES_DIR = 'templates'
-_OUTPUT_DIR = 'html'
+_OUTPUT_DIR = 'public'
 
 BLOG_TITLE = 'The Grand Experiment'
-BASE_URL = 'http://lucasrichter.id.au'
+BASE_URL = 'http://blog-experiment.lucasrichter.id.au'
 BLOG_TAGLINE = 'The blog of the great adventurer'
 
 directory _POSTS_DIR
