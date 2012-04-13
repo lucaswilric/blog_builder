@@ -27,7 +27,7 @@ end
 
 desc 'Build the blog. This task lets you specify the root directory and config file.'
 task :do_everything, :pwd, :config do |t, args|
-	args.with_defaults(:pwd => Dir.pwd.sub(/\/blog_builder$/, ''), :config => "#{ Rake.original_dir }/config.yml")
+	args.with_defaults(:pwd => Rake.original_dir.sub(/\/blog_builder$/, ''), :config => "#{ Rake.original_dir }/config.yml")
 
 	Rake::Task[:initialise].invoke(args[:pwd], args[:config])
 	
