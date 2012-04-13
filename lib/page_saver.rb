@@ -11,6 +11,6 @@ class PageSaver
 	end
 	
 	def get_file_name(title, extension = @extension)
-		title.gsub(/ /, '-').gsub(/[^A-Za-z0-9_-]/, '').downcase + '.' + extension
+		title.gsub(/ /, '-').gsub(/[^A-Za-z0-9_-]/, '').downcase + ([nil, ''].include?(extension) ? '' : '.' + extension)
 	end
 end

@@ -129,6 +129,7 @@ task :complete_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/posts",
 	YamlFacade.load_documents("#{_BUILD_ROOT}/posts.yml").each do |post|
 		post['blog-url'] = Cfg.setting('blog-url')
 		post['blog-title'] = Cfg.setting('blog-title')
+		post['file-name'] = ps.get_file_name(post['title'], '')
 		post_html = merger.merge post, ['posts', 'page']
 		
 		ps.save(post_html, post_dir, post['title'])
