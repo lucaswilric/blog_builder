@@ -8,13 +8,9 @@ class DocMerger
 	def merge(hash, wrappers)
 		content_text = ''
 		
-		if hash['markdown']
-			merge_templates(hash['markdown']) 
-		
-			hash['content'] = @translator.translate(hash['markdown'])
-		else
-			hash['content'] = merge_templates(hash['content'])
-		end
+		hash['content'] = @translator.translate(hash['markdown']).gsub('&lt;<', '<<').gsub('>&gt;', '>>') if hash['markdown']
+	
+		hash['content'] = merge_templates(hash['content'])
 			
 		wrappers.each do |template_name|
 			template = get_template(template_name)
@@ -56,6 +52,7 @@ class DocMerger
 	def merge_templates(text, stack = [])
 		/<<([^>]+)>>/.match(text) do |m|
 			template_name, data = m[1].strip.split(' ', 2)
+			data ||= "{}"
 			
 			raise "Circular template dependency!! #{ stack.push(template_name).join(' -> ') }" if stack.include? template_name
 			

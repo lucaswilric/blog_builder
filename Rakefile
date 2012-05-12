@@ -36,7 +36,7 @@ end
 
 desc 'Set the build parameters to those given, and load the config from the given file (or config.yml)'
 task :initialise, :pwd, :config do |t, args|
-	args.with_defaults(:pwd => Dir.pwd.sub(/\/blog_builder$/, ''), :config => "#{ Rake.original_dir }/config.yml")
+	args.with_defaults(:pwd => Rake.original_dir.sub(/\/blog_builder$/, ''), :config => "#{ Rake.original_dir }/config.yml")
 	_BUILD_ROOT = args[:pwd]
 	
 	Cfg.load(args[:config])
