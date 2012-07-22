@@ -72,8 +72,8 @@ task :front_page => [:initialise, :clear_output_path, :assemble_posts, :complete
 	content = pa.aggregate_most_recent(10, ['posts'])
 	
 	page = { 
-		'blog-url' => Cfg.setting('blog-url'),
-		'blog-title' => Cfg.setting('blog-title'),
+		'blog_url' => Cfg.setting('blog-url'),
+		'blog_title' => Cfg.setting('blog-title'),
 		'title' => Cfg.setting('blog-title'),
 		'content' => content 
 	}
@@ -91,10 +91,10 @@ task :rss => [:initialise, :clear_output_path, :assemble_posts, :complete_html] 
 	
 	rss = { 
 		'title' => Cfg.setting('blog-title'), 
-		'link' => Cfg.setting('blog-url'), 
+		'blog_url' => Cfg.setting('blog-url'), 
 		'description' => Cfg.setting('blog-tagline'), 
 		'content' => content,
-		'pub-date' => Date.parse(pa.most_recent['pub-date']).rfc2822
+		'pub_date' => Date.parse(pa.most_recent['pub_date']).rfc2822
 	}
 	
 	page_rss = DocMerger.new(_TEMPLATES_DIR).merge rss, ['page-rss']
@@ -109,9 +109,9 @@ task :archive => [:initialise, :clear_output_path, :assemble_posts, :complete_ht
 	content = pa.aggregate_most_recent(99999, ['link'])
 	
 	archive = {
-		'blog-url' => Cfg.setting('blog-url'),
+		'blog_url' => Cfg.setting('blog-url'),
 		'title' => "#{ Cfg.setting('blog-title') } - Archive",
-		'blog-title' => Cfg.setting('blog-title'),
+		'blog_title' => Cfg.setting('blog-title'),
 		'content' => content
 	}
 	
@@ -127,9 +127,9 @@ task :complete_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/posts",
 	post_dir = "#{_OUTPUT_DIR}/posts"
 	
 	YamlFacade.load_documents("#{_BUILD_ROOT}/posts.yml").each do |post|
-		post['blog-url'] = Cfg.setting('blog-url')
-		post['blog-title'] = Cfg.setting('blog-title')
-		post['file-name'] = ps.get_file_name(post['title'], '')
+		post['blog_url'] = Cfg.setting('blog-url')
+		post['blog_title'] = Cfg.setting('blog-title')
+		post['file_name'] = ps.get_file_name(post['title'], '')
 		post_html = merger.merge post, ['posts', 'page']
 		
 		ps.save(post_html, post_dir, post['title'])
@@ -144,6 +144,7 @@ task :partial_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/posts/pa
 	post_dir = "#{_OUTPUT_DIR}/posts/partials"
 	
 	YamlFacade.load_documents("#{_BUILD_ROOT}/posts.yml").each do |post|
+		post['file_name'] = ps.get_file_name(post['title'], '')
 		post_html = merger.merge post, ['posts']
 		
 		ps.save(post_html, post_dir, post['title'])

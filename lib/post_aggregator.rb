@@ -7,26 +7,28 @@ class PostAggregator
 
 	def most_recent(count = 1)
 
-	  @posts = YamlFacade.load_documents("posts.yml").sort {|a,b| DateTime.parse(b['pub-date']) <=> DateTime.parse(a['pub-date']) } unless @posts
+	  @posts = YamlFacade.load_documents("posts.yml").sort {|a,b| DateTime.parse(b['pub_date']) <=> DateTime.parse(a['pub_date']) } unless @posts
 	  
 	  count == 1 ? @posts.first : @posts.first(count)
 	end
 	
 	def aggregate_most_recent(count, post_templates)
-		content = ''
+		content = []
 		
 		most_recent(count).each do |post|
 
 			# Store some calculated data
-			post['rss-pub-date'] = Date.parse(post['pub-date']).rfc2822
-			post['file-name'] = @ps.get_file_name(post['title'], '')
-			post['abs-link'] = "#{ Cfg.setting('blog-url') }/posts/#{ post['file-name'] }.html"
+			post['rss_pub_date'] = Date.parse(post['pub_date']).rfc2822
+			post['file_name'] = @ps.get_file_name(post['title'], '')
+			post['rel_link'] = "/posts/#{ post['file_name'] }.html"
+			post['abs_link'] = "#{ Cfg.setting('blog-url') }#{ post['rel-link'] }"
+			post['abs_enclosure'] = post['enclosure'] ? "#{ Cfg.setting('blog-url') }/#{ post['enclosure'] }" : ''
   		
 			# Merge & append
-			content += @merger.merge post, post_templates
+			content << @merger.merge(post, post_templates)
 		end
 	
-		content
+		content.join "\n"
 
 	end
 	
