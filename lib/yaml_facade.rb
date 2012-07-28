@@ -35,6 +35,6 @@ class YamlFacade
       docs << yml
     end
     
-    docs
+    docs.compact
   end
 end

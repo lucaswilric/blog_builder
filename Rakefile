@@ -94,7 +94,7 @@ task :rss => [:initialise, :clear_output_path, :assemble_posts, :complete_html] 
 		'blog_url' => Cfg.setting('blog-url'), 
 		'description' => Cfg.setting('blog-tagline'), 
 		'content' => content,
-		'pub_date' => Date.parse(pa.most_recent['pub_date']).rfc2822
+		'pub_date' => DateTime.parse(pa.most_recent['pub_date']).rfc2822
 	}
 	
 	page_rss = DocMerger.new(_TEMPLATES_DIR).merge rss, ['page-rss']
