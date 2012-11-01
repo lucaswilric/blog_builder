@@ -129,10 +129,10 @@ task :complete_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/posts",
 	YamlFacade.load_documents("#{_BUILD_ROOT}/posts.yml").each do |post|
 		post['blog_url'] = Cfg.setting('blog-url')
 		post['blog_title'] = Cfg.setting('blog-title')
-		post['file_name'] = ps.get_file_name(post['title'], '')
+		post['file_name'] = post['file'].sub(/\.yml$/, '')
 		post_html = merger.merge post, ['posts', 'page']
 		
-		ps.save(post_html, post_dir, post['title'])
+		ps.save(post_html, post_dir, post['file'].sub(/\.yml$/, ''))
 	end
 	
 end
@@ -144,9 +144,9 @@ task :partial_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/posts/pa
 	post_dir = "#{_OUTPUT_DIR}/posts/partials"
 	
 	YamlFacade.load_documents("#{_BUILD_ROOT}/posts.yml").each do |post|
-		post['file_name'] = ps.get_file_name(post['title'], '')
+		post['file_name'] = post['file'].sub(/\.yml$/, '')
 		post_html = merger.merge post, ['posts']
 		
-		ps.save(post_html, post_dir, post['title'])
+		ps.save(post_html, post_dir, post['file'].sub(/\.yml$/, ''))
 	end
 end

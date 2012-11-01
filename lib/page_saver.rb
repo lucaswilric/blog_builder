@@ -10,7 +10,8 @@ class PageSaver
 		File.open(file_path, "w") {|f| f.write content }
 	end
 	
-	def get_file_name(title, extension = @extension)
-		title.gsub(/ /, '-').gsub(/[^A-Za-z0-9_-]/, '').downcase + ([nil, ''].include?(extension) ? '' : '.' + extension)
+	def get_file_name(fullname, extension = @extension)
+	  fullname.gsub!(/ /, '-')
+		fullname += ([nil, ''].include?(extension) ? '' : '.' + extension) unless fullname.end_with? '.' + extension
 	end
 end

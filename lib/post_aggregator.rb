@@ -20,7 +20,7 @@ class PostAggregator
 			# Store some calculated data
 			pub_date = DateTime.parse(post['pub_date']).rfc2822
 			post['rss_pub_date'] = pub_date[0..pub_date.length-10]
-			post['file_name'] = @ps.get_file_name(post['title'], '')
+			post['file_name'] = post['file'].sub(/\.yml$/, '')
 			post['rel_link'] = "/posts/#{ post['file_name'] }.html"
 			post['abs_link'] = "#{ Cfg.setting('blog-url') }#{ post['rel_link'] }"
 			

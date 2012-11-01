@@ -1,6 +1,6 @@
 class YamlFacade
 
-  Boundary = "---\n"
+  Boundary = "---"
   
   def self.join_directory(dir)
     all_posts = ""
@@ -9,6 +9,8 @@ class YamlFacade
       Dir.glob("**.{yml}").each do |file| 
         
         yaml = File.open(file, "r") {|f| f.read }
+        yaml.sub!(/\A(#{Boundary} *\n*)/, '')
+        yaml = "file: #{file}\n" + yaml
         
         all_posts = join_documents all_posts, yaml
       end
@@ -20,10 +22,10 @@ class YamlFacade
   def self.join_documents(first, second)
     return first unless second
   
-    second = Boundary + second unless second.start_with? Boundary
+    second = "#{ Boundary }\n#{ second }" unless second.start_with? Boundary
     second += "\n" unless second.end_with? "\n"
     
-    first.sub(/(^#{Boundary}*)*\Z/, '') + second
+    first.sub(/(^#{Boundary} *\n*)*\Z/, '') + second
   end
   
   def self.load_documents(file_name)
