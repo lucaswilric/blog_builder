@@ -1,12 +1,12 @@
 require 'redcarpet'
 require 'yaml'
 
-require './lib/doc_merger'
-require './lib/translator'
-require './lib/yaml_facade'
-require './lib/page_saver'
-require './lib/post_aggregator'
-require './lib/cfg'
+require 'doc_merger'
+require 'translator'
+require 'yaml_facade'
+require 'page_saver'
+require 'post_aggregator'
+require 'cfg'
 
 _BUILD_ROOT = ''
 _POSTS_DIR = 'posts'
