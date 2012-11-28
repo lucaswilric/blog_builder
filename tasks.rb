@@ -14,7 +14,7 @@ _TEMPLATES_DIR = 'templates'
 _OUTPUT_DIR = 'public'
 
 directory _POSTS_DIR
-directory "#{ _POSTS_DIR }/img"
+directory "img"
 directory _TEMPLATES_DIR
 directory "#{_OUTPUT_DIR}/img"
 directory "#{_OUTPUT_DIR}/posts"
@@ -53,8 +53,8 @@ task :clear_output_path => [:initialise] do
 end
 
 desc 'Move the static files from the templates and posts directories to the output directory.'
-task :static_files => [:initialise, "#{ _POSTS_DIR }/img", "#{ _OUTPUT_DIR }/img"] do
-	cp_r "#{ _POSTS_DIR }/img/.", "#{ _OUTPUT_DIR }/img"
+task :static_files => [:initialise, "img", "#{ _OUTPUT_DIR }/img"] do
+	cp_r "img/.", "#{ _OUTPUT_DIR }/img"
 	cp_r "#{ _TEMPLATES_DIR }/static/.", "#{ _OUTPUT_DIR }"
 end
 
