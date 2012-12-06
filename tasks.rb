@@ -12,13 +12,15 @@ _BUILD_ROOT = ''
 _POSTS_DIR = 'posts'
 _TEMPLATES_DIR = 'templates'
 _OUTPUT_DIR = 'public'
+_IMAGES_DIR = 'img'
+_PARTIALS_DIR = 'posts/partials'
 
 directory _POSTS_DIR
-directory "img"
+directory _IMAGES_DIR
 directory _TEMPLATES_DIR
-directory "#{_OUTPUT_DIR}/img"
-directory "#{_OUTPUT_DIR}/posts"
-directory "#{_OUTPUT_DIR}/posts/partials"
+directory "#{_OUTPUT_DIR}/#{_IMAGES_DIR}"
+directory "#{_OUTPUT_DIR}/#{_POSTS_DIR}"
+directory "#{_OUTPUT_DIR}/#{_PARTIALS_DIR}"
 
 desc "The default task: build the blog using default parameters."
 task :default => [:initialise, :clear_output_path, :assemble_posts, :partial_html, :complete_html, :front_page, :rss, :archive, :static_files] do
@@ -53,8 +55,8 @@ task :clear_output_path => [:initialise] do
 end
 
 desc 'Move the static files from the templates and posts directories to the output directory.'
-task :static_files => [:initialise, "img", "#{ _OUTPUT_DIR }/img"] do
-	cp_r "img/.", "#{ _OUTPUT_DIR }/img"
+task :static_files => [:initialise, _IMAGES_DIR, "#{ _OUTPUT_DIR }/#{_IMAGES_DIR}"] do
+	cp_r "#{_IMAGES_DIR}/.", "#{ _OUTPUT_DIR }/#{_IMAGES_DIR}"
 	cp_r "#{ _TEMPLATES_DIR }/static/.", "#{ _OUTPUT_DIR }"
 end
 
@@ -121,7 +123,7 @@ task :archive => [:initialise, :clear_output_path, :assemble_posts, :complete_ht
 end
 
 desc 'Generate the pages that display each individual post.'
-task :complete_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/posts", :assemble_posts] do
+task :complete_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/#{_POSTS_DIR}", :assemble_posts] do
 	merger = DocMerger.new(_TEMPLATES_DIR)
 	ps = PageSaver.new
 	post_dir = "#{_OUTPUT_DIR}/posts"
@@ -138,7 +140,7 @@ task :complete_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/posts",
 end
 
 desc 'Generate the "HTML chunk" for each post - just the HTML, none of the template crap.'
-task :partial_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/posts/partials", :assemble_posts] do
+task :partial_html => [:initialise, :clear_output_path, "#{_OUTPUT_DIR}/#{_PARTIALS_DIR}", :assemble_posts] do
 	merger = DocMerger.new(_TEMPLATES_DIR)
 	ps = PageSaver.new
 	post_dir = "#{_OUTPUT_DIR}/posts/partials"
