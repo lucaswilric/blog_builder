@@ -1,3 +1,4 @@
+require 'redcarpet'
 
 class Translator
 

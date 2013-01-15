@@ -2,7 +2,7 @@ require 'redcarpet'
 require 'yaml'
 
 require 'doc_merger'
-require 'translator'
+require 'html_pipeline_translator'
 require 'yaml_facade'
 require 'page_saver'
 require 'post_aggregator'

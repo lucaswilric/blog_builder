@@ -3,7 +3,7 @@ require 'erb'
 class DocMerger
 
 	def initialize(templates_dir = 'templates')
-		@translator = Translator.new
+		@translator = HPTranslator.new(asset_root: 'http://assets.github.com/images/icons/')
 		@tl = TemplateLoader.new(templates_dir)
 	end
 
