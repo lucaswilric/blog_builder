@@ -2,6 +2,8 @@ require 'redcarpet'
 require 'yaml'
 
 require 'doc_merger'
+require 'template_loader'
+require 'template_renderer'
 require 'html_pipeline_translator'
 require 'yaml_facade'
 require 'page_saver'
